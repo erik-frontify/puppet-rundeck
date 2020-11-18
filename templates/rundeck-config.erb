@@ -10,7 +10,7 @@ rundeck.security.useHMacRequestTokens = <%= @security_config['useHMacRequestToke
 rundeck.security.apiCookieAccess.enabled = <%= @security_config['apiCookieAccess'] %>
 <%- end -%>
 <%- if @security_config.key?('apiTokensDuration') -%>
-rundeck.api.tokens.duration.max = <%= @security_config['apiTokensDuration'] %>
+rundeck.api.tokens.duration.max = "<%= @security_config['apiTokensDuration'] %>"
 <%- end -%>
 <%- if @security_config.key?('csrfRefererFilterMethod') -%>
 rundeck.security.csrf.referer.filterMethod = <%= @security_config['csrfRefererFilterMethod'] %>
@@ -64,15 +64,33 @@ rundeck.executionMode = "<%= @execution_mode %>"
 <%- end -%>
 
 rundeck.projectsStorageType = "<%= @projects_storage_type %>"
-quartz.props.threadPool.threadCount = "<%= @quartz_job_threadcount %>"
+quartz.threadPool.threadCount = "<%= @quartz_job_threadcount %>"
 
 <%- if @key_storage_type == 'file' -%>
 rundeck.storage.provider."1".type = "file"
 rundeck.storage.provider."1".config.baseDir = "<%= @file_keystorage_dir %>"
+<%- elsif @key_storage_type == 'vault' -%>
+rundeck.storage.provider."1".type = "vault-storage"
+rundeck.storage.provider."1".path = "keys"
+rundeck.storage.provider."1".config.prefix = "<%= @vault_keystorage_prefix %>"
+rundeck.storage.provider."1".config.address = "<%= @vault_keystorage_url %>"
+rundeck.storage.provider."1".config.storageBehaviour = "rundeck"
+rundeck.storage.provider."1".config.secretBackend = "kv"
+rundeck.storage.provider."1".config.approleId = "<%= @vault_keystorage_approle_approleid %>"
+rundeck.storage.provider."1".config.approleSecretId = "<%= @vault_keystorage_approle_secretid %>"
+rundeck.storage.provider."1".config.approleAuthMount = "<%= @vault_keystorage_approle_authmount %>"
+rundeck.storage.provider."1".config.authBackend = "<%= @vault_keystorage_authbackend %>"
+rundeck.storage.provider."1".removePathPrefix = true
 <%- else -%>
 rundeck.storage.provider."1".type = "db"
 <%- end -%>
 rundeck.storage.provider."1".path = "/"
+<%- if !@storage_encrypt_config.empty? -%>
+
+  <%- @storage_encrypt_config.sort.each do |k,v| -%>
+rundeck.storage.converter."1".<%= k %> = "<%= v %>"
+  <%- end -%>
+<%- end -%>
 
 rundeck.security.authorization.preauthenticated.enabled = "<%= @preauthenticated_config['enabled']%>"
 rundeck.security.authorization.preauthenticated.attributeName = "<%= @preauthenticated_config['attributeName']%>"

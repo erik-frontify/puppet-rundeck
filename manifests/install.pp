@@ -7,7 +7,6 @@
 # This private class installs the rundeck package and its dependencies
 #
 class rundeck::install {
-
   assert_private()
 
   $manage_repo        = $rundeck::manage_repo
@@ -55,7 +54,7 @@ class rundeck::install {
     }
   }
 
-  case $facts['osfamily'] {
+  case $facts['os']['family'] {
     'RedHat': {
       if $manage_repo {
         yumrepo { 'bintray-rundeck':
@@ -85,10 +84,10 @@ class rundeck::install {
           before   => Package['rundeck'],
         }
       }
-      ensure_packages(['rundeck'], {'ensure' => $package_ensure, notify => Class['rundeck::service'], require => Class['apt::update'] } )
+      ensure_packages(['rundeck'], { 'ensure' => $package_ensure, notify => Class['rundeck::service'], require => Class['apt::update'] })
     }
     default: {
-      err("The osfamily: ${::osfamily} is not supported")
+      err("The osfamily: ${facts['os']['family']} is not supported")
     }
   }
 

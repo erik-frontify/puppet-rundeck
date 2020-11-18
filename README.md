@@ -24,6 +24,40 @@
 
 The rundeck puppet module for installing and managing [Rundeck](http://rundeck.org/)
 
+
+### Supported Versions of Rundeck
+
+| Rundeck Version  | Rundeck Puppet module versions |
+| ---------------- | -------------------------------|
+| 2.x - 3.0.X      | v5.4.0 and older               |
+| 3.1 - up         | v6.0.0 and newer               |
+
+Since [Rundeck v3.1](https://docs.rundeck.com/docs/upgrading/upgrade-to-rundeck-3.1.html),
+it is not required the installtion of `rundeck-config` package for RHEL based distributions anymore.
+
+Rundeck Team decided to mark this package _obsolete_, making it difficult to maintain
+backwards compatibility with releases older than 3.1.
+
+Trying to install any version prior to 3.1.0 will throw the following error message:
+```
+Resolving Dependencies
+--> Running transaction check
+---> Package rundeck.noarch 0:2.11.5-1.56.GA will be installed
+--> Processing Dependency: rundeck-config for package: rundeck-2.11.5-1.56.GA.noarch
+Package rundeck-config is obsoleted by rundeck, but obsoleting package does not provide for requirements
+...
+```
+
+If you need to downgrade and/or install a specific version of Rundeck older than 3.1.0, you can still use this module
+to do it (v5.4.0 and prior), although you would need to [manually install the packages](https://github.com/rundeck/rundeck/issues/5168) disabling yum's obsoletes processing logic when performing updates.
+
+Ex:
+```
+yum reinstall --setopt=obsoletes=0 rundeck-config-3.0.24.20190719-1.201907192053 rundeck-3.0.24.20190719-1.201907192053
+```
+
+The latest version of this puppet module only supports Rundeck 3.1 and up.
+
 ## Module Description
 
 This module provides a way to manage the installation and configuration of
@@ -245,6 +279,11 @@ Boolean value if set to true enables security_roles_array.
 
 Array value if you want to have more role in web.xml
 
+##### `storage_encrypt_config`
+
+Hash containing the necessary values to configure a plugin for key storage
+encryption.
+
 ##### `manage_repo`
 
 Whether to manage the bintray YUM/APT repository containing the Rundeck rpm/deb. Defaults to true.
@@ -261,9 +300,42 @@ Whether to manage `user` (and enforce `user_id` if set). Defaults to false.
 
 Whether to create the `rundeck_home` directory. Defaults to true.
 
+##### `keystorage_type`
+
+Which keystorage type should be used:
+
+* file - Default file based keystorage
+* db - Use DB as keystorage
+* vault - Use Hashicorp Vault
+  - An additional [Rundeck Vault plugin](https://github.com/rundeck-plugins/vault-storage/) is required.
+
 ##### `file_keystorage_dir`
 
 The location of stored data like public keys, private keys.
+
+##### `vault_keystorage_prefix`
+
+The prefix for the Hashicorp Vault keys. See [here](https://github.com/rundeck-plugins/vault-storage) for more information.
+
+##### `vault_keystorage_url`
+
+The URL for the Hashicorp Vault service
+
+##### `vault_keystorage_approle_approleid`
+
+The AppRole ID for the Hashicorp Vault access
+
+##### `vault_keystorage_approle_secretid`
+
+The Secret ID for the Hashicorp Vault access. Please note, that the Vault plugin isn't able to refresh the SecretID while running. You have to add a Cron job, to restart Rundeck. See [here](https://github.com/rundeck-plugins/vault-storage/issues/15#issuecomment-512815828) for more information.
+
+##### `vault_keystorage_approle_authmount`
+
+The AppRole Authmount for the Hashicorp Vault access
+
+##### `vault_keystorage_authbackend`
+
+The AuthBackend for the Hashicorp Vault, which should used
 
 #### Define: `rundeck::config::aclpolicyfile`
 
@@ -488,9 +560,9 @@ class { 'rundeck':
 
 This module is tested on the following platforms:
 
+* Debian 8
 * CentOS 6
 * CentOS 7
-* Ubuntu 14.04
 * Ubuntu 16.04
 
 It is tested with the OSS version of Puppet only.
