@@ -30,6 +30,10 @@
 #
 # Key ID for the GPG key for the Debian package
 #
+# [*repo_apt_gpgkey*]
+#
+# Location where the GPG key can be found
+#
 # [*repo_apt_keyserver*]
 #
 # Keysever for the GPG key for the Debian package
@@ -137,6 +141,9 @@
 #
 # [*rdeck_profile_template*]
 #  Allows you to use your own profile template instead of the default from the package maintainer
+#
+# [*rdeck_override_template*]
+#  Allows you to use your own override template instead of the default from the package maintainer
 #
 # [*rss_enabled*]
 #  Boolean value if set to true enables RSS feeds that are public (non-authenticated)
@@ -261,11 +268,13 @@ class rundeck (
   Stdlib::Absolutepath $rdeck_home                              = $rundeck::params::rdeck_home,
   Boolean $manage_home                                          = $rundeck::params::manage_home,
   Optional[String] $rdeck_profile_template                      = undef,
+  String $rdeck_override_template                               = 'rundeck/profile_overrides.erb',
   String $realm_template                                        = $rundeck::params::realm_template,
   Stdlib::HTTPUrl $repo_yum_source                              = $rundeck::params::repo_yum_source,
   String $repo_yum_gpgkey                                       = $rundeck::params::repo_yum_gpgkey,
   Stdlib::HTTPUrl $repo_apt_source                              = $rundeck::params::repo_apt_source,
   String $repo_apt_key_id                                       = $rundeck::params::repo_apt_key_id,
+  Stdlib::Httpsurl $repo_apt_gpgkey                             = $rundeck::params::repo_apt_gpgkey,
   String $repo_apt_keyserver                                    = $rundeck::params::repo_apt_keyserver,
   Boolean $rss_enabled                                          = $rundeck::params::rss_enabled,
   Hash $security_config                                         = $rundeck::params::security_config,
