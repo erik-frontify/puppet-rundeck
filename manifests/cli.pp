@@ -42,6 +42,10 @@
 #   Cli password to authenticate.
 # @param token
 #   Cli token to authenticate.
+# @param insecure_ssl
+#   Set RD_INSECURE_SSL=true to disable SSL certificate verification.
+# @param insecure_ssl_no_warn
+#   Set RD_INSECURE_SSL_NO_WARN=true to suppress SSL warnings when insecure_ssl is enabled.
 # @param projects
 #   Cli projects config. See example for structure and rundeck::config::project for available params.
 #
@@ -55,6 +59,8 @@ class rundeck::cli (
   String[1] $user = 'admin',
   String[1] $password = 'admin',
   Optional[String[8]] $token = undef,
+  Boolean $insecure_ssl = false,
+  Boolean $insecure_ssl_no_warn = false,
   Hash[String, Rundeck::Project] $projects = {},
 ) {
   stdlib::ensure_packages(['jq'])
@@ -111,11 +117,19 @@ class rundeck::cli (
     ;
   }
 
+  $_ssl_env_vars = $insecure_ssl ? {
+    true    => $insecure_ssl_no_warn ? {
+      true    => ['RD_INSECURE_SSL=true', 'RD_INSECURE_SSL_NO_WARN=true'],
+      default => ['RD_INSECURE_SSL=true'],
+    },
+    default => [],
+  }
+
   $_default_env_vars = [
     'RD_FORMAT=json',
     "RD_URL=${url}",
     "RD_BYPASS_URL=${bypass_url}",
-  ]
+  ] + $_ssl_env_vars
 
   if $token {
     $environment = $_default_env_vars + ["RD_TOKEN=${token}"]

@@ -138,6 +138,10 @@
 #   Cli password to authenticate.
 # @param cli_token
 #   Cli token to authenticate.
+# @param cli_insecure_ssl
+#   Set RD_INSECURE_SSL=true to disable SSL certificate verification for the cli.
+# @param cli_insecure_ssl_no_warn
+#   Set RD_INSECURE_SSL_NO_WARN=true to suppress SSL warnings when cli_insecure_ssl is enabled.
 # @param cli_projects
 #   Cli projects config.
 #
@@ -269,6 +273,8 @@ class rundeck (
   String[1] $cli_user = 'admin',
   String[1] $cli_password = 'admin',
   Optional[String[8]] $cli_token = undef,
+  Boolean $cli_insecure_ssl = false,
+  Boolean $cli_insecure_ssl_no_warn = false,
   Hash[String, Rundeck::Project] $cli_projects = {},
 ) {
   validate_rd_policy($admin_policies)
@@ -290,15 +296,17 @@ class rundeck (
 
   if $manage_cli {
     class { 'rundeck::cli':
-      manage_repo       => false,
-      notify_conn_check => true,
-      version           => $cli_version,
-      url               => $rundeck::config::framework_config['framework.server.url'],
-      bypass_url        => $grails_server_url,
-      user              => $cli_user,
-      password          => $cli_password,
-      token             => $cli_token,
-      projects          => $cli_projects,
+      manage_repo          => false,
+      notify_conn_check    => true,
+      version              => $cli_version,
+      url                  => $rundeck::config::framework_config['framework.server.url'],
+      bypass_url           => $grails_server_url,
+      user                 => $cli_user,
+      password             => $cli_password,
+      token                => $cli_token,
+      insecure_ssl         => $cli_insecure_ssl,
+      insecure_ssl_no_warn => $cli_insecure_ssl_no_warn,
+      projects             => $cli_projects,
     }
 
     Class['rundeck::service']
